@@ -1,35 +1,63 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { MdKeyboardDoubleArrowDown } from "react-icons/md";
 
 const App = () => {
-  const [day, setDay] = useState("--");
-  const [month, setMonth] = useState<number>(0);
-  const [year, setYear] = useState<number>(0);
-  const [ageDay, setAgeDay] = useState("--");
-  const [ageMonth, setAgeMonth] = useState("--");
-  const [ageYear, setAgeYear] = useState("--");
+  const [day, setDay] = useState<number | string>("");
+  const [month, setMonth] = useState<number | string>("");
+  const [year, setYear] = useState<number | string>("");
+
+  const [ageYear, setAgeYear] = useState<number | string>("--");
+  const [ageMonth, setAgeMonth] = useState<number | string>("--");
+  const [ageDay, setAgeDay] = useState<number | string>("--");
 
   const handleChangeOne = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDay(e.target.value);
   };
+
   const handleChangeTwo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMonth(e.target.value);
   };
+
   const handleChangeThree = (e: React.ChangeEvent<HTMLInputElement>) => {
     setYear(e.target.value);
   };
 
-  const date = new Date();
-  const currentDay = date.getDate();
-  const currentMonth = date.getMonth();
-  const currentYear = date.getFullYear();
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setAgeYear(currentYear - year);
-    setAgeMonth(currentMonth - month);
-    setAgeDay(currentDay - day);
+
+    if (day && month && year) {
+      const birthDate = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day)
+      );
+      const currentDate = new Date();
+
+      let age = currentDate.getFullYear() - birthDate.getFullYear();
+      const monthDiff = currentDate.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && currentDate.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      setAgeYear(age);
+      setAgeMonth(monthDiff < 0 ? 12 + monthDiff : monthDiff);
+      const dayDiff = currentDate.getDate() - birthDate.getDate();
+      setAgeDay(
+        dayDiff < 0
+          ? new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth() - 1,
+              0
+            ).getDate() + dayDiff
+          : dayDiff
+      );
+    }
   };
+
   return (
     <main className="flex items-center justify-center h-[100vh] bg-offWhite">
       <div className="bg-primaryWhite rounded-[1rem] py-[2rem] pl-[1rem] sm:pl-[2rem] pr-[1rem] sm:pr-[5rem] rounded-br-[8rem] relative">
@@ -49,6 +77,7 @@ const App = () => {
               className="font-bold border-lightGrey border-[1px] p-[0.5rem] rounded-[0.3rem] w-[5rem] outline-none"
               max={31}
               min={1}
+              value={day}
               onChange={handleChangeOne}
             />
           </div>
@@ -67,6 +96,7 @@ const App = () => {
               className="font-bold border-lightGrey border-[1px] p-[0.5rem] rounded-[0.3rem] w-[5rem] outline-none"
               max={12}
               min={1}
+              value={month}
               onChange={handleChangeTwo}
             />
           </div>
@@ -83,8 +113,9 @@ const App = () => {
               id="year"
               placeholder="YYYY"
               className="font-bold border-lightGrey border-[1px] p-[0.5rem] rounded-[0.3rem] w-[5rem] outline-none"
-              max={2024}
+              max={new Date().getFullYear()}
               min={1920}
+              value={year}
               onChange={handleChangeThree}
             />
           </div>
